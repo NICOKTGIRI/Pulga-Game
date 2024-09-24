@@ -14,7 +14,7 @@ El proyecto está organizado en varios archivos:
 
 ### Detalles de los Archivos
 
-#### `main.py` (150 líneas aprox.)
+#### `main.py` 
 
 Este archivo es el corazón del juego. Gestiona las reglas del juego, el bucle principal, y las interacciones del jugador con el entorno. 
 
@@ -25,8 +25,7 @@ Las funciones clave incluyen:
 - **`check_event`**: Maneja los eventos como teclas pulsadas o clics del ratón, e incluye la lógica para reiniciar el juego si es necesario.
 - **`dibujar_boton_reintentar`**: Dibuja un botón de "Reintentar" cuando el jugador pierde, permitiendo reiniciar el juego con un clic.
 
-#### `pulga2.py` (120 líneas aprox.)
-
+#### `pulga2.py` 
 Este archivo contiene las clases `Pulga` y `Plataforma`, responsables del comportamiento de los personajes y objetos en el juego.
 
 - **Clase Pulga**: Define las características del personaje principal (pulga).
@@ -46,11 +45,11 @@ Este archivo contiene las clases `Pulga` y `Plataforma`, responsables del compor
 ### Métricas de Tamaño
 
 - **`main.py`**: 
-  - **Tamaño**: ~150 líneas de código.
+  - **Tamaño**: ~205 líneas de código.
   - **Responsabilidades**: Lógica principal del juego, control de eventos, scroll, y bucle principal.
 
 - **`pulga2.py`**:
-  - **Tamaño**: ~120 líneas de código.
+  - **Tamaño**: ~178 líneas de código.
   - **Responsabilidades**: Manejo del comportamiento de la pulga y las plataformas (movimiento, colisiones, dibujo en pantalla).
 
 ## Cómo Ejecutar el Juego
@@ -211,14 +210,14 @@ Si se han implementado 100 módulos y 95 de ellos funcionan correctamente:
 
 ### 1. Líneas de Código (LOC)
 
-- `main.py`: **284 líneas**
-- `pulga2.py`: **90 líneas**
+- `main.py`: **205 líneas**
+- `pulga2.py`: **178 líneas**
   
-**Total LOC = 374 líneas**
+**Total LOC = 383 líneas**
 
 ### 2. Fórmula:
 
-**284 + 90 = 374**
+**205 + 178 = 383**
 
 ### 3. Interpretación:
 - **Alto LOC**: El código tiene un tamaño considerable, lo que podría reflejar una aplicación con varias funcionalidades. Es importante asegurarse de que esté bien modularizado y estructurado para facilitar su mantenimiento.
