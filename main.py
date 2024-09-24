@@ -4,195 +4,202 @@ import random
 
 from pulga2 import *
 
-# ----------------------------------------------------------------
-# Codigo Principal (main.py) ... Aqui se aloja la clase Game
-# 
-# Funciones:
-# 			instancias()
-#			reInstancias()
-#			obtenerGrafico()
-#			dibujaScroll()
-#
-#			buclePrincipal()
-#							update()
-#							draw()
-#							check_event()			
-# ----------------------------------------------------------------
 class Game:
-	def __init__(self):
-		pygame.init()
+    def __init__(self):
+        pygame.init()
 
-		self.rojo = (209, 36, 5)
-		self.verde = (50, 205, 54)
-		self.amarillo = (240, 130, 14)
-		self.azulOsc = (9, 20, 70)
-		self.fondoGRIS = (80, 80, 80)
-		self.fondoCIELOAzul = (92, 197, 222)
-		self.blancoNUBE = (249, 249, 249)
+        # Definición de colores
+        self.rojo = (209, 36, 5)
+        self.verde = (50, 205, 54)
+        self.amarillo = (240, 130, 14)
+        self.azulOsc = (9, 20, 70)
+        self.fondoGRIS = (80, 80, 80)
+        self.fondoCIELOAzul = (92, 197, 222)
+        self.blancoNUBE = (249, 249, 249)
 
-		self.RESOLUCION = (800, 700)
-		self.FPS = 50
+        # Configuración de la pantalla y FPS
+        self.RESOLUCION = (800, 700)
+        self.FPS = 50
 
-		self.TX = 50
-		self.TY = 50
-		self.FILAS = int(self.RESOLUCION[1] / self.TY)
-		self.COLUMNAS = int(self.RESOLUCION[0] / self.TX)
+        # Tamaño de las baldosas (tiles)
+        self.TX = 50
+        self.TY = 50
+        self.FILAS = int(self.RESOLUCION[1] / self.TY)
+        self.COLUMNAS = int(self.RESOLUCION[0] / self.TX)
 
-		self.GRAVEDAD = 1
-		self.MAX_PLATAFORMAS = 7
-		self.PLATAFORMAS_LEVEL_UP = 70
-		self.contadorPlataformas = 0
-		self.anchoPlataf_nivel = [(2, 7), (2, 6), (2, 5), (2, 5),
-									(2, 5), (2, 4), (2, 4), (2, 4)]
+        # Configuración del juego
+        self.GRAVEDAD = 1
+        self.MAX_PLATAFORMAS = 7
+        self.contadorPlataformas = 0
+        self.plataformasSaltadas = 0
+        self.anchoPlataf_nivel = [(2, 7), (2, 6), (2, 5), (2, 5),
+                                    (2, 5), (2, 4), (2, 4), (2, 4)]
 
-		self.programaEjecutandose = True
-		self.presentacion = True
-		self.enJuego = False
-		self.gameOver = False
-		self.nivelSuperado = False
+        # Estados del juego
+        self.programaEjecutandose = True
+        self.presentacion = True
+        self.enJuego = False
+        self.gameOver = False
 
-		self.pantalla = pygame.display.set_mode(self.RESOLUCION)
-		self.reloj = pygame.time.Clock()
+        # Inicialización de Pygame
+        self.pantalla = pygame.display.set_mode(self.RESOLUCION)
+        self.reloj = pygame.time.Clock()
 
-		self.scrollImg1 = pygame.image.load('./assets/img/scrollBg1.png').convert()
-		self.scrollImg2 = pygame.image.load('./assets/img/scrollBg2.png').convert()
+        # Carga de imágenes de fondo
+        self.scrollImg1 = pygame.image.load('./assets/img/scrollBg1.png').convert()
+        self.scrollImg2 = pygame.image.load('./assets/img/scrollBg2.png').convert()
 
-		self.SCROLL_THRESH = 200
-		self.scroll = 0
-		self.bgScroll = 0
+        # Configuración del scroll
+        self.SCROLL_THRESH = 200
+        self.scroll = 0
+        self.bgScroll = 0
 
-		self.sonido_salto = pygame.mixer.Sound("./assets/sound/jumpbros.ogg")
-		self.sonido_salto.set_volume(0.3)
-		self.sonido_gameOver = pygame.mixer.Sound('./assets/sound/gameoveretro.ogg')
-		self.sonido_gameOver.set_volume(0.7)
-		self.sonido_pacIntermision = pygame.mixer.Sound('./assets/sound/pacmanintermision.ogg')
-		self.sonido_pacIntermision.set_volume(0.7)
+        # Carga de sonidos
+        self.sonido_salto = pygame.mixer.Sound("./assets/sound/jumpbros.ogg")
+        self.sonido_salto.set_volume(0.3)
+        self.sonido_gameOver = pygame.mixer.Sound('./assets/sound/gameoveretro.ogg')
+        self.sonido_gameOver.set_volume(0.7)
 
-		pygame.mixer.music.load("./assets/sound/mario_tuberias.ogg")
-		pygame.mixer.music.set_volume(0.4)
-		pygame.mixer.music.play(loops=2)
+        # Música de fondo
+        pygame.mixer.music.load("./assets/sound/mario_tuberias.ogg")
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(loops=-1)
 
-		self.lista_spritesAdibujar = pygame.sprite.Group()
-		self.lista_plataformas = pygame.sprite.Group()
+        # Grupos de sprites
+        self.lista_spritesAdibujar = pygame.sprite.Group()
+        self.lista_plataformas = pygame.sprite.Group()
 
-		self.instancias()
+        # Fuente para el texto
+        self.font = pygame.font.Font(None, 36)
 
+        # Inicialización de instancias
+        self.instancias()
 
-	def instancias(self):
-		self.puntos = 0
-		self.nivel = 1
-		self.vidas = 3
+    def instancias(self):
+        # Reinicia el contador de plataformas saltadas
+        self.plataformasSaltadas = 0
+        
+        # Crea la instancia del jugador (pulga)
+        x = self.RESOLUCION[0] // 2
+        y = self.RESOLUCION[1] - self.TY * 3 
+        self.pulga = Pulga(self, x, y, self.TX, self.TY, (40, 40))
 
-		x = self.RESOLUCION[0] // 2
-		y = self.RESOLUCION[1] - self.TY * 3 
-		self.pulga = Pulga(self, x, y, self.TX, self.TY, (40, 40))
+        # Crea la plataforma inicial (suelo)
+        y = self.FILAS - 1
+        self.plataforma = Plataforma(self, 0, y, self.COLUMNAS, 0, self.TX, self.TY, (self.TX, self.TY))
+        self.lista_spritesAdibujar.add(self.plataforma)
+        self.lista_plataformas.add(self.plataforma)
+        self.contadorPlataformas += 1
 
-		# Suelo (1ra plataforma)
-		y = self.FILAS - 1
-		self.plataforma = Plataforma(self, 0, y, self.COLUMNAS, 0, self.TX, self.TY, (self.TX, self.TY))
-		self.lista_spritesAdibujar.add(self.plataforma)
-		self.lista_plataformas.add(self.plataforma)
-		self.contadorPlataformas += 1
+    def reInstanciasPlataformas(self):
+        # Crea nuevas plataformas si hay menos del máximo permitido
+        if len(self.lista_plataformas) < self.MAX_PLATAFORMAS:
+            self.contadorPlataformas += 1
 
+            # Genera posición y ancho aleatorios para la nueva plataforma
+            x = random.randrange(self.COLUMNAS - 2)
+            ancho = random.randrange(2, 7)
 
-	def reInstanciasPlataformas(self):
-		# Reinstancias Plataformas ------------------------------
-		cont = self.contadorPlataformas
-		topP = self.PLATAFORMAS_LEVEL_UP + self.nivel * 4
+            # Calcula la posición vertical de la nueva plataforma
+            ultimaPlataforma = min(plataforma.rect.y for plataforma in self.lista_plataformas) // self.TY 
+            espacioEntrePlataformas = random.randrange(2) + 2
+            y = ultimaPlataforma - espacioEntrePlataformas
 
-		if len(self.lista_plataformas) < self.MAX_PLATAFORMAS and cont < topP:
-			self.contadorPlataformas += 1
+            # Asigna velocidad aleatoria a la plataforma
+            velX_rnd = random.choice([0, 1, -1])
 
-			if self.contadorPlataformas == topP:
-				ancho = self.COLUMNAS
-				x = 0
-			else:
-				x = random.randrange(self.COLUMNAS - 2)
+            # Crea la nueva plataforma y la añade a los grupos de sprites
+            self.plataforma = Plataforma(self, x, y, ancho, velX_rnd, self.TX, self.TY, (self.TX, self.TY))
+            self.lista_spritesAdibujar.add(self.plataforma)
+            self.lista_plataformas.add(self.plataforma)
 
-				if self.nivel < 9:
-					valor = self.anchoPlataf_nivel[self.nivel - 1]
-					ancho = random.randrange(valor[0], valor[1])
-				else:
-					ancho = random.randrange(2, 3)
+    def obtenerGrafico(self, nombrePng, escala):
+        # Carga y escala una imagen
+        img = pygame.image.load('./assets/img/' + nombrePng).convert()
+        image = pygame.transform.scale(img, escala)
+        image.set_colorkey((255, 255, 255))
+        rect = image.get_rect()
 
-			ultimaPlataforma = self.plataforma.rect.y // self.TY 
-			espacioEntrePlataformas = random.randrange(2) + 2
-			y = ultimaPlataforma - espacioEntrePlataformas
+        return (image, rect)
 
-			if self.contadorPlataformas == topP:
-				self.pulga.PlataformaMETA = y 
+    def dibujaScroll(self):
+        # Dibuja el fondo con efecto de scroll
+        resY = self.RESOLUCION[1]
+        self.bgScroll += self.scroll
 
-			velX_rnd = 0 
+        if self.bgScroll >= resY * 2:
+            self.bgScroll = 0
 
-			self.plataforma = Plataforma(self, x, y, ancho, velX_rnd, self.TX, self.TY, (self.TX, self.TY))
-			self.lista_spritesAdibujar.add(self.plataforma)
-			self.lista_plataformas.add(self.plataforma)
+        self.pantalla.blit(self.scrollImg1, (0, 0 + self.bgScroll))
+        self.pantalla.blit(self.scrollImg2, (0, -resY + self.bgScroll))
+        self.pantalla.blit(self.scrollImg1, (0, -resY * 2 + self.bgScroll))
 
+    def update(self):
+        # Actualiza el juego en cada frame
+        pygame.display.set_caption(str(int(self.reloj.get_fps())))
 
-	def obtenerGrafico(self, nombrePng, escala):
-		img = pygame.image.load('./assets/img/' + nombrePng).convert()
-		image = pygame.transform.scale(img, escala)
-		image.set_colorkey((255, 255, 255))
-		rect = image.get_rect()
+        self.reInstanciasPlataformas()
 
-		return (image, rect)
+        self.scroll = self.pulga.actualiza()
+        self.dibujaScroll()
 
+        self.lista_spritesAdibujar.update()
+        self.lista_spritesAdibujar.draw(self.pantalla)
 
-	def dibujaScroll(self):
-		resY = self.RESOLUCION[1]
-		self.bgScroll += self.scroll
+        self.pulga.dibuja(self.pantalla)
 
-		if self.bgScroll >= resY * 2:
-			self.bgScroll = 0
+        # Dibuja el contador de plataformas saltadas
+        texto_contador = self.font.render(f"Plataformas: {self.plataformasSaltadas}", True, self.rojo)
+        self.pantalla.blit(texto_contador, (self.RESOLUCION[0] - 200, 10))
 
-		self.pantalla.blit(self.scrollImg1, (0, 0 + self.bgScroll))
-		self.pantalla.blit(self.scrollImg2, (0, -resY + self.bgScroll))
-		self.pantalla.blit(self.scrollImg1, (0, -resY * 2 + self.bgScroll))
+        if self.gameOver:
+            self.dibujar_boton_reintentar()
+        
+        pygame.display.flip()
+        self.reloj.tick(self.FPS)
 
+    def dibujar_boton_reintentar(self):
+        # Dibuja el botón de reintentar cuando el juego termina
+        boton_rect = pygame.Rect(self.RESOLUCION[0] // 2 - 75, self.RESOLUCION[1] // 2 - 25, 150, 50)
+        pygame.draw.rect(self.pantalla, self.verde, boton_rect)
+        texto_boton = self.font.render("Reintentar", True, self.azulOsc)
+        texto_rect = texto_boton.get_rect(center=boton_rect.center)
+        self.pantalla.blit(texto_boton, texto_rect)
 
-	def update(self):
-		pygame.display.set_caption(str(int(self.reloj.get_fps())))
+    def check_event(self):
+        # Maneja los eventos de Pygame
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-		self.reInstanciasPlataformas()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
 
-		self.scroll = self.pulga.actualiza()
-		self.dibujaScroll()
+                elif event.key == pygame.K_RETURN and self.presentacion:
+                    self.presentacion = False
+                    self.enJuego = True
 
-		self.lista_spritesAdibujar.update()
-		self.lista_spritesAdibujar.draw(self.pantalla)
+            elif event.type == pygame.MOUSEBUTTONDOWN and self.gameOver:
+                if pygame.Rect(self.RESOLUCION[0] // 2 - 75, self.RESOLUCION[1] // 2 - 25, 150, 50).collidepoint(event.pos):
+                    self.reiniciar_juego()
 
-		self.pulga.dibuja(self.pantalla)
-		
-		pygame.display.flip()
-		self.reloj.tick(self.FPS)
+    def reiniciar_juego(self):
+        # Reinicia el juego
+        self.gameOver = False
+        self.enJuego = True
+        self.lista_spritesAdibujar.empty()
+        self.lista_plataformas.empty()
+        self.instancias()
 
-
-	def check_event(self):
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
-
-			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
-					pygame.quit()
-					sys.exit()
-
-				elif event.key == pygame.K_RETURN and self.presentacion:
-					self.presentacion = False
-					self.enJuego = True
-					pygame.mixer.music.stop()
-
-
-	def buclePrincipal(self):
-		while self.programaEjecutandose:
-			self.check_event()
-			self.update()
-
+    def buclePrincipal(self):
+        # Bucle principal del juego
+        while self.programaEjecutandose:
+            self.check_event()
+            self.update()
 
 if __name__ == '__main__':
     game = Game()
     game.buclePrincipal()
-
-
-			
